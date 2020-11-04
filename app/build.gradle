@@ -1,7 +1,10 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+//    id 'org.jetbrains.kotlin.android' version '1.4.0'
+
 }
+def compose_version = "1.0.0-alpha06"
 
 android {
     compileSdkVersion 30
@@ -29,6 +32,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
         useIR = true
+
     }
 
     buildFeatures {
@@ -37,7 +41,7 @@ android {
 
     composeOptions{
         kotlinCompilerVersion '1.4.0'
-        kotlinCompilerExtensionVersion '$compose_version'
+        kotlinCompilerExtensionVersion "$compose_version"
     }
 
 
