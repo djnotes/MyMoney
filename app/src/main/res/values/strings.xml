@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">My Money</string>
+    <string name="app_name">پول من</string>
+    <string name="here_is_your_costs">لیست هزینه‌های شما</string>
+    <string name="diagrams">نمودارها</string>
+    <string name="about_us">درباره ما</string>
+    <string name="help">راهنما</string>
 </resources>
