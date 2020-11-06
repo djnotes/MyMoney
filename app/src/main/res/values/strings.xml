@@ -4,4 +4,6 @@
     <string name="diagrams">نمودارها</string>
     <string name="about_us">درباره ما</string>
     <string name="help">راهنما</string>
+    <string name="cost_name">نام هزینه</string>
+    <string name="cost_value">مقدار هزینه</string>
 </resources>
