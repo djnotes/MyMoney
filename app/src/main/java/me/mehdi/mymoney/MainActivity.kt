@@ -16,6 +16,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigate
+import androidx.navigation.compose.rememberNavController
 import androidx.ui.tooling.preview.Preview
 import me.mehdi.mymoney.ui.MyMoneyTheme
 
@@ -23,7 +29,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent{
-            HomeScreen()
+            val navigator = rememberNavController()
+            HomeScreen(navigator)
         }
 
     }
@@ -31,35 +38,46 @@ class MainActivity : AppCompatActivity() {
 
 
 
-@Preview
+
+
 @Composable
-fun HomeScreen(){
-    val scaffoldState = rememberScaffoldState()
-    MyMoneyTheme{
-        Scaffold(floatingActionButton = { FAB() },
-                topBar = { topBar() },
-                scaffoldState = scaffoldState,
-                drawerElevation = 8.dp,
-                drawerBackgroundColor = Color.Red,
-                drawerGesturesEnabled = true,
-                drawerScrimColor = Color.Green,
-                drawerContent = { HomeDrawer() }
-        ){
-        Column(modifier = Modifier.fillMaxSize().drawShadow(4.dp)){
-            Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp), text = stringResource(id = R.string.app_name))
-            Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
-        }
-        }
+fun HomeScreen(navController: NavHostController){
+    NavHost(navController, startDestination = "home"){
+        composable("home"){Home(navController)}
+        composable("newitem"){NewItem()}
     }
+
 }
 
 @Composable
-fun FAB(){
-    FloatingActionButton(onClick = {}) {
+fun FAB(navigator: NavController){
+    FloatingActionButton(onClick = {navigator.navigate("newitem")}) {
         Icon(vectorResource(R.drawable.ic_baseline_add_24))
     }
 }
 
+
+@Composable
+fun Home(navController: NavHostController){
+    val scaffoldState = rememberScaffoldState()
+
+    MyMoneyTheme{
+        Scaffold(floatingActionButton = { FAB(navController) },
+            topBar = { topBar() },
+            scaffoldState = scaffoldState,
+            drawerElevation = 8.dp,
+            drawerBackgroundColor = Color.Red,
+            drawerGesturesEnabled = true,
+            drawerScrimColor = Color.Green,
+            drawerContent = { HomeDrawer() }
+        ){
+            Column(modifier = Modifier.fillMaxSize().drawShadow(4.dp)){
+                Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp), text = stringResource(id = R.string.app_name))
+                Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
+            }
+        }
+    }
+}
 @Composable
 fun topBar(){
     Row {
