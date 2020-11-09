@@ -45,8 +45,8 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun HomeScreen(navController: NavHostController){
     NavHost(navController, startDestination = "home"){
-        composable("home?costName={costName}&costValue={costValue}", arguments = listOf(navArgument("costName"){defaultValue = null}, navArgument("costValue"){defaultValue=null})){
-            navBackStackEntry ->  Home(navController, navBackStackEntry.arguments)
+        composable("home"){
+            Home(navController)
         }
         composable("new-item"){NewItem(navController)}
         composable("profile/{name}", listOf(navArgument("name"){type = NavType.StringType}))
@@ -75,7 +75,7 @@ fun FAB(navigator: NavController){
 
 
 @Composable
-fun Home(navController: NavHostController, bundle: Bundle?){
+fun Home(navController: NavHostController){
     val scaffoldState = rememberScaffoldState()
 
     MyMoneyTheme{
@@ -91,12 +91,6 @@ fun Home(navController: NavHostController, bundle: Bundle?){
             Column(modifier = Modifier.fillMaxSize().drawShadow(4.dp)){
                 Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp), text = stringResource(id = R.string.app_name))
                 Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
-                bundle?.getString("costName")?.let{
-                    Text("Cost Name: $it")
-                }
-                bundle?.getString("costValue")?.let{
-                    Text("Cost Value: $it")
-                }
             }
         }
     }
@@ -149,7 +143,7 @@ fun NewItem(navigator: NavController){
     Column {
         TextField(value = costName, onValueChange = { text -> costName = text }, label = { Text(stringResource(id = R.string.cost_name)) }, modifier = inputModifier, keyboardType = KeyboardType.Text)
         TextField(value = costValue, onValueChange = { value -> costValue = value }, label = { Text(stringResource(id = R.string.cost_value)) }, modifier = inputModifier, keyboardType = KeyboardType.Number)
-        Button(onClick = {navigator.navigate("home?costName=$costName&costValue=$costValue")}){
+        Button(onClick = {navigator.navigate("home")}){
             Text("Save")
         }
     }
