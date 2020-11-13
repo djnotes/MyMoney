@@ -78,6 +78,16 @@ fun FAB(navigator: NavController){
 fun Home(navController: NavHostController){
     val scaffoldState = rememberScaffoldState()
 
+    var costName by mutableStateOf("")
+    var costValue by mutableStateOf("")
+    navController.currentBackStackEntry?.savedStateHandle?.getLiveData<String>("costName")?.observe(navController.currentBackStackEntry!!){value ->
+        costName = value
+    }
+
+    navController.currentBackStackEntry?.savedStateHandle?.getLiveData<String>("costValue")?.observe(navController.currentBackStackEntry!!){value ->
+        costValue = value
+    }
+
     MyMoneyTheme{
         Scaffold(floatingActionButton = { FAB(navController) },
             topBar = { topBar(navController) },
@@ -91,6 +101,13 @@ fun Home(navController: NavHostController){
             Column(modifier = Modifier.fillMaxSize().drawShadow(4.dp)){
                 Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp), text = stringResource(id = R.string.app_name))
                 Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
+                if (costName.isNotEmpty()){
+                    Text("Cost Name: $costName")
+                }
+
+                if(costValue.isNotEmpty()){
+                    Text("Cost Value: $costValue")
+                }
             }
         }
     }
@@ -143,7 +160,11 @@ fun NewItem(navigator: NavController){
     Column {
         TextField(value = costName, onValueChange = { text -> costName = text }, label = { Text(stringResource(id = R.string.cost_name)) }, modifier = inputModifier, keyboardType = KeyboardType.Text)
         TextField(value = costValue, onValueChange = { value -> costValue = value }, label = { Text(stringResource(id = R.string.cost_value)) }, modifier = inputModifier, keyboardType = KeyboardType.Number)
-        Button(onClick = {navigator.navigate("home")}){
+        Button(onClick = {
+            navigator.previousBackStackEntry?.savedStateHandle?.set("costName", costName)
+            navigator.previousBackStackEntry?.savedStateHandle?.set("costValue", costValue)
+            navigator.popBackStack()
+        }){
             Text("Save")
         }
     }
