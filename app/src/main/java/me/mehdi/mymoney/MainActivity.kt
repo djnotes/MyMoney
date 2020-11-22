@@ -2,6 +2,7 @@ package me.mehdi.mymoney
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
@@ -19,20 +20,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.ui.tooling.preview.Preview
+import me.mehdi.mymoney.db.CostViewModel
 import me.mehdi.mymoney.ui.MyMoneyTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
 
 class MainActivity : AppCompatActivity() {
+
+    private val costViewModel by viewModels<CostViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent{
             val navigator = rememberNavController()
-            HomeScreen(navigator)
+            HomeScreen(navigator, costViewModel)
         }
 
     }
@@ -43,10 +52,11 @@ class MainActivity : AppCompatActivity() {
 
 
 @Composable
-fun HomeScreen(navController: NavHostController){
+fun HomeScreen(navController: NavHostController, costViewModel: CostViewModel){
+
     NavHost(navController, startDestination = "home"){
         composable("home"){
-            Home(navController)
+            Home(navController, costViewModel)
         }
         composable("new-item"){NewItem(navController)}
         composable("profile/{name}", listOf(navArgument("name"){type = NavType.StringType}))
@@ -75,7 +85,7 @@ fun FAB(navigator: NavController){
 
 
 @Composable
-fun Home(navController: NavHostController){
+fun Home(navController: NavHostController, costViewModel: CostViewModel){
     val scaffoldState = rememberScaffoldState()
 
     var costName by mutableStateOf("")
@@ -88,6 +98,9 @@ fun Home(navController: NavHostController){
         costValue = value
     }
 
+
+
+
     MyMoneyTheme{
         Scaffold(floatingActionButton = { FAB(navController) },
             topBar = { topBar(navController) },
@@ -98,6 +111,7 @@ fun Home(navController: NavHostController){
             drawerScrimColor = Color.Green,
             drawerContent = { HomeDrawer() }
         ){
+
             Column(modifier = Modifier.fillMaxSize().drawShadow(4.dp)){
                 Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp), text = stringResource(id = R.string.app_name))
                 Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
@@ -108,6 +122,8 @@ fun Home(navController: NavHostController){
                 if(costValue.isNotEmpty()){
                     Text("Cost Value: $costValue")
                 }
+
+
             }
         }
     }
