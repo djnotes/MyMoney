@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumnFor
@@ -58,7 +57,7 @@ fun HomeScreen(navController: NavHostController, costViewModel: CostViewModel){
         composable("home"){
             Home(navController, costViewModel)
         }
-        composable("new-item"){NewItem(navController)}
+        composable("new-item"){NewItem(navController, costViewModel)}
         composable("profile/{name}", listOf(navArgument("name"){type = NavType.StringType}))
         {navBackStackEntry ->
             Profile(navBackStackEntry.arguments?.getString("name").toString())
@@ -86,8 +85,11 @@ fun FAB(navigator: NavController){
 
 @Composable
 fun Home(navController: NavHostController, costViewModel: CostViewModel){
-    val scaffoldState = rememberScaffoldState()
 
+
+
+
+    val scaffoldState = rememberScaffoldState()
     var costName by mutableStateOf("")
     var costValue by mutableStateOf("")
     navController.currentBackStackEntry?.savedStateHandle?.getLiveData<String>("costName")?.observe(navController.currentBackStackEntry!!){value ->
@@ -97,7 +99,6 @@ fun Home(navController: NavHostController, costViewModel: CostViewModel){
     navController.currentBackStackEntry?.savedStateHandle?.getLiveData<String>("costValue")?.observe(navController.currentBackStackEntry!!){value ->
         costValue = value
     }
-
 
 
 
@@ -113,6 +114,7 @@ fun Home(navController: NavHostController, costViewModel: CostViewModel){
         ){
 
             Column(modifier = Modifier.fillMaxSize().drawShadow(4.dp)){
+
                 Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp), text = stringResource(id = R.string.app_name))
                 Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
                 if (costName.isNotEmpty()){
@@ -168,14 +170,15 @@ fun bottomBar(){
 
 //@Preview
 @Composable
-fun NewItem(navigator: NavController){
+fun NewItem(navigator: NavController, costViewModel: CostViewModel){
     var costName by remember { mutableStateOf("") }
     var costValue by remember { mutableStateOf("") }
     val inputModifier = Modifier.padding(8.dp)
 
     Column {
-        TextField(value = costName, onValueChange = { text -> costName = text }, label = { Text(stringResource(id = R.string.cost_name)) }, modifier = inputModifier, keyboardType = KeyboardType.Text)
-        TextField(value = costValue, onValueChange = { value -> costValue = value }, label = { Text(stringResource(id = R.string.cost_value)) }, modifier = inputModifier, keyboardType = KeyboardType.Number)
+//        TextField(value = costName, onValueChange = { text -> costName = text }, label = { Text(stringResource(id = R.string.cost_name)) }, modifier = inputModifier, keyboardType = KeyboardType.Text)
+//        TextField(value = costValue, onValueChange = { value -> costValue = value }, label = { Text(stringResource(id = R.string.cost_value)) }, modifier = inputModifier, keyboardType = KeyboardType.Number)
+
         Button(onClick = {
             navigator.previousBackStackEntry?.savedStateHandle?.set("costName", costName)
             navigator.previousBackStackEntry?.savedStateHandle?.set("costValue", costValue)
