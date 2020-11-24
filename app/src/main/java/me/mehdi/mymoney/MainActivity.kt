@@ -17,24 +17,27 @@ import androidx.compose.ui.platform.setContent
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.viewModel
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
-import androidx.ui.tooling.preview.Preview
 import me.mehdi.mymoney.db.CostViewModel
 import me.mehdi.mymoney.ui.MyMoneyTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import me.mehdi.mymoney.db.Cost
+import me.mehdi.mymoney.db.CostRepository
+import me.mehdi.mymoney.db.CostViewModelFactory
 
 
 class MainActivity : AppCompatActivity() {
 
-    private val costViewModel by viewModels<CostViewModel>()
+//    private val costViewModel by viewModels<CostViewModelFactory().>()
+    private val costViewModel: CostViewModel by viewModels {
+        CostViewModelFactory((application as CostsApplication).repository)
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -115,14 +118,18 @@ fun Home(navController: NavHostController, costViewModel: CostViewModel){
 
             Column(modifier = Modifier.fillMaxSize().drawShadow(4.dp)){
 
-                Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp), text = stringResource(id = R.string.app_name))
-                Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
-                if (costName.isNotEmpty()){
-                    Text("Cost Name: $costName")
-                }
+//                Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp), text = stringResource(id = R.string.app_name))
+//                Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
+//                if (costName.isNotEmpty()){
+//                    Text("Cost Name: $costName")
+//                }
+//
+//                if(costValue.isNotEmpty()){
+//                    Text("Cost Value: $costValue")
+//                }
 
-                if(costValue.isNotEmpty()){
-                    Text("Cost Value: $costValue")
+                LazyColumnFor(costViewModel.costs.value!!){ cost->
+                    Text("Cost: ${cost.costName}\t${cost.costValue}")
                 }
 
 
@@ -184,6 +191,7 @@ fun NewItem(navigator: NavController, costViewModel: CostViewModel){
             navigator.previousBackStackEntry?.savedStateHandle?.set("costValue", costValue)
             navigator.popBackStack()
         }){
+            costViewModel.addCost(Cost(costName = costName, costValue = costValue.toDouble()))
             Text("Save")
         }
     }
