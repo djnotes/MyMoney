@@ -16,6 +16,4 @@ interface CostDao {
 
     @Delete()
     fun deleteCost(vararg cost: Cost)
-
-
 }

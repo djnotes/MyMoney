@@ -1,5 +1,6 @@
 package me.mehdi.mymoney.db
 
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
