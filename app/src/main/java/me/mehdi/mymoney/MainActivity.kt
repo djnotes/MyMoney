@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +27,7 @@ import me.mehdi.mymoney.db.CostViewModel
 import me.mehdi.mymoney.ui.MyMoneyTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.KeyboardType
 import me.mehdi.mymoney.db.Cost
 import me.mehdi.mymoney.db.CostRepository
 import me.mehdi.mymoney.db.CostViewModelFactory
@@ -42,8 +44,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent{
-            val navigator = rememberNavController()
-            HomeScreen(navigator, costViewModel)
+            MyMoneyTheme {
+                val navigator = rememberNavController()
+                HomeScreen(navigator, costViewModel)
+            }
         }
 
     }
@@ -87,36 +91,34 @@ fun FAB(navigator: NavController){
 
 
 @Composable
-fun Home(navController: NavHostController, costViewModel: CostViewModel){
-
-
+fun Home(navController: NavHostController, costViewModel: CostViewModel) {
 
 
     val scaffoldState = rememberScaffoldState()
     var costName by mutableStateOf("")
     var costValue by mutableStateOf("")
-    navController.currentBackStackEntry?.savedStateHandle?.getLiveData<String>("costName")?.observe(navController.currentBackStackEntry!!){value ->
+    navController.currentBackStackEntry?.savedStateHandle?.getLiveData<String>("costName")?.observe(navController.currentBackStackEntry!!) { value ->
         costName = value
     }
 
-    navController.currentBackStackEntry?.savedStateHandle?.getLiveData<String>("costValue")?.observe(navController.currentBackStackEntry!!){value ->
+    navController.currentBackStackEntry?.savedStateHandle?.getLiveData<String>("costValue")?.observe(navController.currentBackStackEntry!!) { value ->
         costValue = value
     }
 
 
 
-    MyMoneyTheme{
+    MyMoneyTheme {
         Scaffold(floatingActionButton = { FAB(navController) },
-            topBar = { topBar(navController) },
-            scaffoldState = scaffoldState,
-            drawerElevation = 8.dp,
-            drawerBackgroundColor = Color.Red,
-            drawerGesturesEnabled = true,
-            drawerScrimColor = Color.Green,
-            drawerContent = { HomeDrawer() }
-        ){
+                topBar = { topBar(navController) },
+                scaffoldState = scaffoldState,
+                drawerElevation = 8.dp,
+                drawerBackgroundColor = Color.Red,
+                drawerGesturesEnabled = true,
+                drawerScrimColor = Color.Green,
+                drawerContent = { HomeDrawer() }
+        ) {
 
-            Column(modifier = Modifier.fillMaxSize().drawShadow(4.dp)){
+            Column(modifier = Modifier.fillMaxSize().drawShadow(4.dp)) {
 
 //                Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp), text = stringResource(id = R.string.app_name))
 //                Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
@@ -128,8 +130,10 @@ fun Home(navController: NavHostController, costViewModel: CostViewModel){
 //                    Text("Cost Value: $costValue")
 //                }
 
-                LazyColumnFor(costViewModel.costs.value!!){ cost->
-                    Text("Cost: ${cost.costName}\t${cost.costValue}")
+                costViewModel.costs.value?.let { costs ->
+                    LazyColumnFor(costs) { cost ->
+                        Text("Cost: ${cost.costName}\t${cost.costName}")
+                    }
                 }
 
 
@@ -137,6 +141,7 @@ fun Home(navController: NavHostController, costViewModel: CostViewModel){
         }
     }
 }
+
 @Composable
 fun topBar(navController: NavHostController){
     Row {
@@ -183,15 +188,16 @@ fun NewItem(navigator: NavController, costViewModel: CostViewModel){
     val inputModifier = Modifier.padding(8.dp)
 
     Column {
-//        TextField(value = costName, onValueChange = { text -> costName = text }, label = { Text(stringResource(id = R.string.cost_name)) }, modifier = inputModifier, keyboardType = KeyboardType.Text)
-//        TextField(value = costValue, onValueChange = { value -> costValue = value }, label = { Text(stringResource(id = R.string.cost_value)) }, modifier = inputModifier, keyboardType = KeyboardType.Number)
+        TextField(value = costName, onValueChange = { text -> costName = text }, label = { Text(stringResource(id = R.string.cost_name)) }, modifier = inputModifier, keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text))
+        TextField(value = costValue, onValueChange = { value -> costValue = value }, label = { Text(stringResource(id = R.string.cost_value)) }, modifier = inputModifier, keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number))
 
         Button(onClick = {
+            costViewModel.addCost(Cost(costName = costName, costValue = costValue.toDouble()))
             navigator.previousBackStackEntry?.savedStateHandle?.set("costName", costName)
             navigator.previousBackStackEntry?.savedStateHandle?.set("costValue", costValue)
             navigator.popBackStack()
+
         }){
-            costViewModel.addCost(Cost(costName = costName, costValue = costValue.toDouble()))
             Text("Save")
         }
     }

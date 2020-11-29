@@ -1,20 +1,20 @@
 package me.mehdi.mymoney.db
 
 import androidx.compose.runtime.collectAsState
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class CostViewModel(private val repository: CostRepository): ViewModel() {
 
-    val costs : LiveData<List<Cost>> = repository.costs as LiveData<List<Cost>>
+    val costs : LiveData<List<Cost>> = repository.costs.asLiveData()
 
     fun addCost(vararg cost: Cost) = viewModelScope.launch{
         repository.addCost(*cost)
     }
 }
+
+
 
 
 class CostViewModelFactory(private val repository: CostRepository) : ViewModelProvider.Factory {
