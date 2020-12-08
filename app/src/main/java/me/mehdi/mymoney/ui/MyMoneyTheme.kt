@@ -11,7 +11,6 @@ import me.mehdi.mymoney.R
 @Composable
 fun MyMoneyTheme(content:@Composable () -> Unit){
     val typography = Typography(defaultFontFamily =  fontFamily(font(R.font.vazir)))
-    val darkColors = darkColors()
-    MaterialTheme(colors = darkColors, typography = typography, content = content)
+    MaterialTheme(typography = typography, content = content)
 
 }

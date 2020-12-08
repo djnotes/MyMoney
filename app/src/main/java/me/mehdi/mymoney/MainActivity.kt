@@ -26,6 +26,7 @@ import androidx.navigation.compose.*
 import me.mehdi.mymoney.db.CostViewModel
 import me.mehdi.mymoney.ui.MyMoneyTheme
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.KeyboardType
 import me.mehdi.mymoney.db.Cost
@@ -41,8 +42,11 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent{
             MyMoneyTheme {
                 val navigator = rememberNavController()
@@ -130,12 +134,14 @@ fun Home(navController: NavHostController, costViewModel: CostViewModel) {
 //                    Text("Cost Value: $costValue")
 //                }
 
-                costViewModel.costs.value?.let { costs ->
-                    LazyColumnFor(costs) { cost ->
-                        Text("Cost: ${cost.costName}\t${cost.costName}")
+
+                val costs = costViewModel.costs.observeAsState()
+                costs.value?.let{items->
+                    LazyColumnFor(items = items) {cost->
+                        Text("Cost ${cost.costName}\t Value: ${cost.costValue}")
+
                     }
                 }
-
 
             }
         }
