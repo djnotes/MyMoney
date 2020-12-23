@@ -1,5 +1,6 @@
 package me.mehdi.mymoney
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -27,8 +28,9 @@ import me.mehdi.mymoney.ui.MyMoneyTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawShadow
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.viewinterop.AndroidView
 import me.mehdi.mymoney.db.Cost
 import me.mehdi.mymoney.db.CostRepository
 import me.mehdi.mymoney.db.CostViewModelFactory
@@ -47,12 +49,28 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContent{
-            MyMoneyTheme {
-                val navigator = rememberNavController()
-                HomeScreen(navigator, costViewModel)
-            }
+        val btn = android.widget.Button(this)
+        btn.text = "Hello"
+        btn.setOnClickListener{
+            startActivity(Intent(this, AnimationActivity::class.java))
+            overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
         }
+
+        setContent {
+            AndroidView(
+                viewBlock = {
+                    btn
+                }
+            )
+        }
+
+//
+//        setContent{
+//            MyMoneyTheme {
+//                val navigator = rememberNavController()
+//                HomeScreen(navigator, costViewModel)
+//            }
+//        }
 
     }
 }
@@ -122,7 +140,7 @@ fun Home(navController: NavHostController, costViewModel: CostViewModel) {
                 drawerContent = { HomeDrawer() }
         ) {
 
-            Column(modifier = Modifier.fillMaxSize().shadow(4.dp)) {
+            Column(modifier = Modifier.fillMaxSize().drawShadow(4.dp)) {
 
 //                Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp), text = stringResource(id = R.string.app_name))
 //                Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
