@@ -8,6 +8,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.CoreText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -29,6 +31,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.drawShadow
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.font
+import androidx.compose.ui.text.font.fontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.viewinterop.AndroidView
 import me.mehdi.mymoney.db.Cost
@@ -56,21 +63,14 @@ class MainActivity : AppCompatActivity() {
             overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
         }
 
-        setContent {
-            AndroidView(
-                viewBlock = {
-                    btn
-                }
-            )
-        }
 
-//
-//        setContent{
-//            MyMoneyTheme {
-//                val navigator = rememberNavController()
-//                HomeScreen(navigator, costViewModel)
-//            }
-//        }
+
+        setContent{
+            MyMoneyTheme {
+                val navigator = rememberNavController()
+                HomeScreen(navigator, costViewModel)
+            }
+        }
 
     }
 }
@@ -155,7 +155,7 @@ fun Home(navController: NavHostController, costViewModel: CostViewModel) {
 
                 val costs = costViewModel.costs.observeAsState()
                 costs.value?.let{items->
-                    LazyColumn {
+                    LazyColumn (modifier = Modifier.align(Alignment.CenterHorizontally).padding(start = 16.dp)){
                         items(items = items, itemContent = { cost->
                             Text("Cost ${cost.costName}\t Value: ${cost.costValue}")
 
@@ -216,6 +216,7 @@ fun NewItem(navigator: NavController, costViewModel: CostViewModel){
     val inputModifier = Modifier.padding(8.dp)
 
     Column {
+        BasicText("هزینه و مقدار آن را وارد کنید (Basic Text): ", style = TextStyle.Default.copy(color = Color.Red, fontWeight = FontWeight(10), fontFamily = fontFamily(listOf(font(R.font.lalezar)))), modifier = Modifier.align(Alignment.CenterHorizontally))
         TextField(value = costName, onValueChange = { text -> costName = text }, label = { Text(stringResource(id = R.string.cost_name)) }, modifier = inputModifier, keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text))
         TextField(value = costValue, onValueChange = { value -> costValue = value }, label = { Text(stringResource(id = R.string.cost_value)) }, modifier = inputModifier, keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number))
 
