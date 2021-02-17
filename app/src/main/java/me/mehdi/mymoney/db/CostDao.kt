@@ -16,4 +16,7 @@ interface CostDao {
 
     @Delete()
     fun deleteCost(vararg cost: Cost)
+
+    @Query("SELECT * FROM cost WHERE cost_id = :id LIMIT 1")
+    fun findCost(id: Int): Flow<Cost>
 }

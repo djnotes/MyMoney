@@ -13,4 +13,8 @@ class CostRepository(private val costDao: CostDao){
     suspend fun deleteCosts(vararg cost: Cost){
         costDao.deleteCost(*cost)
     }
+
+    fun findCost(id: Int): Flow<Cost> {
+        return costDao.findCost(id)
+    }
 }

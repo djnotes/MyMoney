@@ -2,6 +2,7 @@ package me.mehdi.mymoney.db
 
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.*
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
@@ -11,6 +12,10 @@ class CostViewModel(private val repository: CostRepository): ViewModel() {
 
     fun addCost(vararg cost: Cost) = viewModelScope.launch{
         repository.addCost(*cost)
+    }
+
+    fun findCost(id: Int): Flow<Cost> {
+        return repository.findCost(id)
     }
 }
 

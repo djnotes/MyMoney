@@ -1,25 +1,20 @@
 package me.mehdi.mymoney
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.CoreText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.setContent
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -30,66 +25,100 @@ import me.mehdi.mymoney.ui.MyMoneyTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.drawShadow
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.font
-import androidx.compose.ui.text.font.fontFamily
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.tooling.preview.Preview
 import me.mehdi.mymoney.db.Cost
-import me.mehdi.mymoney.db.CostRepository
 import me.mehdi.mymoney.db.CostViewModelFactory
+
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Text
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+//import androidx.compose.ui.platform.setContent
+import androidx.activity.compose.setContent
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.random.Random
 
 
 class MainActivity : AppCompatActivity() {
 
-//    private val costViewModel by viewModels<CostViewModelFactory().>()
+    //    private val costViewModel by viewModels<CostViewModelFactory().>()
     private val costViewModel: CostViewModel by viewModels {
         CostViewModelFactory((application as CostsApplication).repository)
     }
 
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val btn = android.widget.Button(this)
-        btn.text = "Hello"
-        btn.setOnClickListener{
-            startActivity(Intent(this, AnimationActivity::class.java))
-            overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left)
-        }
 
 
 
-        setContent{
+        setContent {
             MyMoneyTheme {
                 val navigator = rememberNavController()
                 HomeScreen(navigator, costViewModel)
             }
         }
 
+
     }
+
+
+
+    @Preview
+    @Composable
+    fun PreviewMainScreen(){
+//        val costViewModel: CostViewModel by viewModels {
+//            CostViewModelFactory((application as CostsApplication).repository)
+//        }
+
+        val navController = rememberNavController()
+
+        HomeScreen(navController = navController, costViewModel = costViewModel)
+    }
+
 }
 
 
-
-
-
 @Composable
-fun HomeScreen(navController: NavHostController, costViewModel: CostViewModel){
+fun HomeScreen(navController: NavHostController, costViewModel: CostViewModel?){
 
     NavHost(navController, startDestination = "home"){
         composable("home"){
-            Home(navController, costViewModel)
+            if (costViewModel != null) {
+                Home(navController, costViewModel, onItemClicked = {id -> navController.navigate("detail/$id")})
+            }
         }
-        composable("new-item"){NewItem(navController, costViewModel)}
+        composable("new-item"){
+            if (costViewModel != null) {
+                NewItem(navController, costViewModel)
+            }
+        }
         composable("profile/{name}", listOf(navArgument("name"){type = NavType.StringType}))
         {navBackStackEntry ->
             Profile(navBackStackEntry.arguments?.getString("name").toString())
+        }
+
+        composable("detail/{id}", listOf(navArgument("id"){type = NavType.IntType})){
+            navBackStackEntry ->
+            navBackStackEntry.arguments?.getInt("id")?.let {
+                if (costViewModel != null) {
+                    Detail(it, costViewModel)
+                }
+            }
         }
     }
 
@@ -100,20 +129,19 @@ fun HomeScreen(navController: NavHostController, costViewModel: CostViewModel){
 fun Profile(name: String){
     Column{
         Text(name)
-        Image(imageResource(R.drawable.eagle))
+        Image(painterResource(R.drawable.eagle), contentDescription = "Eagle")
     }
 }
 
 @Composable
 fun FAB(navigator: NavController){
     FloatingActionButton(onClick = {navigator.navigate("new-item")}) {
-        Icon(vectorResource(R.drawable.ic_baseline_add_24))
-    }
+        Icon(painter = painterResource(id = R.drawable.ic_baseline_add_24), contentDescription = "Add")
+}
 }
 
-
 @Composable
-fun Home(navController: NavHostController, costViewModel: CostViewModel) {
+fun Home(navController: NavHostController, costViewModel: CostViewModel, onItemClicked : (id: Int) -> Unit) {
 
 
     val scaffoldState = rememberScaffoldState()
@@ -131,36 +159,57 @@ fun Home(navController: NavHostController, costViewModel: CostViewModel) {
 
     MyMoneyTheme {
         Scaffold(floatingActionButton = { FAB(navController) },
-                topBar = { topBar(navController) },
+                topBar = { TopBar(navController) },
                 scaffoldState = scaffoldState,
                 drawerElevation = 8.dp,
                 drawerBackgroundColor = Color.Red,
                 drawerGesturesEnabled = true,
                 drawerScrimColor = Color.Green,
-                drawerContent = { HomeDrawer() }
+                drawerContent = { HomeDrawer() },
+            bottomBar = { BottomBar() }
         ) {
 
-            Column(modifier = Modifier.fillMaxSize().drawShadow(4.dp)) {
+            Column(modifier = Modifier.fillMaxSize()) {
 
-//                Text(modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp), text = stringResource(id = R.string.app_name))
-//                Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
-//                if (costName.isNotEmpty()){
-//                    Text("Cost Name: $costName")
-//                }
-//
-//                if(costValue.isNotEmpty()){
-//                    Text("Cost Value: $costValue")
-//                }
-
-
+                Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
                 val costs = costViewModel.costs.observeAsState()
-                costs.value?.let{items->
-                    LazyColumn (modifier = Modifier.align(Alignment.CenterHorizontally).padding(start = 16.dp)){
-                        items(items = items, itemContent = { cost->
-                            Text("Cost ${cost.costName}\t Value: ${cost.costValue}")
+                costs.value?.let { items ->
+                    Surface(modifier = Modifier.shadow(4.dp)){
+                    LazyColumn(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .fillMaxSize()
+                    ) {
+                        items(items = items, itemContent = { cost ->
 
-                        })
+                             cost.id?.let{
+                                Row(modifier = Modifier.clickable { onItemClicked(cost.id) }
+                                    .fillMaxWidth()) {
+                                    Text(
+                                        "${cost.costName}\t : $${cost.costValue}",
+                                        modifier = Modifier.padding(8.dp)
+                                            .width(150.dp)
+
+
+                                    )
+                                    Image(
+                                        painterResource(id = getRandomImageResource()),
+                                        contentDescription = cost.costName,
+                                        modifier = Modifier
+                                            .padding(8.dp)
+                                            .size(150.dp)
+                                            .border(2.dp, Color.Black),
+                                        contentScale = ContentScale.Crop
+                                    )
+
+                                }
+                            }
+
+
+                        }
+                        )
                     }
+                }
                 }
 
             }
@@ -169,14 +218,18 @@ fun Home(navController: NavHostController, costViewModel: CostViewModel) {
 }
 
 @Composable
-fun topBar(navController: NavHostController){
+fun TopBar(navController: NavHostController){
     Row {
-        TopAppBar(modifier = Modifier.padding(8.dp).align(Alignment.CenterVertically)) {
-            val iconModifier = Modifier.align(Alignment.CenterVertically).padding(4.dp)
-            Icon(vectorResource(id = R.drawable.ic_baseline_account_balance_24), modifier = iconModifier)
-            Icon(vectorResource(id = R.drawable.ic_baseline_print_24), modifier = iconModifier)
-            Icon(vectorResource(id = R.drawable.ic_baseline_help_outline_24), modifier = iconModifier)
-            Icon(vectorResource(R.drawable.ic_baseline_person_24), modifier = iconModifier.clickable(onClick = {navController.navigate("profile/John Doe")}))
+        TopAppBar(modifier = Modifier
+            .padding(8.dp)
+            .align(Alignment.CenterVertically)) {
+            val iconModifier = Modifier
+                .align(Alignment.CenterVertically)
+                .padding(4.dp)
+            Icon(painterResource(id = R.drawable.ic_baseline_account_balance_24), contentDescription = "Balance",  modifier = iconModifier)
+            Icon(painterResource(id = R.drawable.ic_baseline_print_24), contentDescription = "Print",  modifier = iconModifier)
+            Icon(painterResource(id = R.drawable.ic_baseline_help_outline_24), contentDescription = "Help", modifier = iconModifier)
+            Icon(painterResource(R.drawable.ic_baseline_person_24), contentDescription = "Person",  modifier = iconModifier.clickable(onClick = {navController.navigate("profile/John Doe")}))
         }
     }
 }
@@ -186,7 +239,8 @@ fun topBar(navController: NavHostController){
 fun HomeDrawer(){
     val drawerItems = listOf(stringResource(id = R.string.diagrams), stringResource(id = R.string.help), stringResource(id = R.string.about_us))
     Column{
-        LazyColumn {
+        LazyColumn (modifier = Modifier.fillMaxWidth()) {
+
             items(items = drawerItems, itemContent = { item ->
                 Text(text = item, modifier = Modifier.padding(8.dp))
             })
@@ -194,18 +248,6 @@ fun HomeDrawer(){
     }
 }
 
-@Composable
-fun bottomBar(){
-    BottomAppBar() {
-        Row {
-            TopAppBar(modifier = Modifier.padding(8.dp)) {
-                Icon(vectorResource(id = R.drawable.ic_baseline_account_balance_24))
-                Icon(vectorResource(id = R.drawable.ic_baseline_print_24))
-                Icon(vectorResource(id = R.drawable.ic_baseline_help_outline_24))
-            }
-        }
-    }
-}
 
 
 //@Preview
@@ -215,10 +257,14 @@ fun NewItem(navigator: NavController, costViewModel: CostViewModel){
     var costValue by remember { mutableStateOf("") }
     val inputModifier = Modifier.padding(8.dp)
 
-    Column {
-        BasicText("هزینه و مقدار آن را وارد کنید (Basic Text): ", style = TextStyle.Default.copy(color = Color.Red, fontWeight = FontWeight(10), fontFamily = fontFamily(listOf(font(R.font.lalezar)))), modifier = Modifier.align(Alignment.CenterHorizontally))
+    Column (modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
+        BasicText("هزینه و مقدار آن را وارد کنید (Basic Text): ", style = TextStyle.Default.copy(color = Color.Red, fontWeight = FontWeight(10), fontFamily = FontFamily(listOf(
+            Font(R.font.vazir)
+        ))
+        ), modifier = Modifier.align(Alignment.CenterHorizontally))
         TextField(value = costName, onValueChange = { text -> costName = text }, label = { Text(stringResource(id = R.string.cost_name)) }, modifier = inputModifier, keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text))
         TextField(value = costValue, onValueChange = { value -> costValue = value }, label = { Text(stringResource(id = R.string.cost_value)) }, modifier = inputModifier, keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number))
+
 
         Button(onClick = {
             costViewModel.addCost(Cost(costName = costName, costValue = costValue.toDouble()))
@@ -230,4 +276,70 @@ fun NewItem(navigator: NavController, costViewModel: CostViewModel){
             Text("Save")
         }
     }
+}
+
+
+fun getRandomImageResource() : Int {
+    val resources = arrayOf(
+        R.drawable.apple,
+    R.drawable.book,
+    R.drawable.orange,
+    R.drawable.meat,
+    R.drawable.beverage,
+    R.drawable.vegetables
+    )
+
+    val index = Random.nextInt(0, resources.size)
+    return resources[index]
+}
+
+
+
+@Composable
+fun BottomBar(){
+        BottomAppBar() {
+            Row {
+                TopAppBar(modifier = Modifier.padding(8.dp)) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_baseline_account_balance_24),
+                        contentDescription = "Balance",
+                        modifier = Modifier.clickable {  }
+                    )
+                    Icon(
+                        painterResource(id = R.drawable.ic_baseline_print_24),
+                        contentDescription = "Print"
+                    )
+                    Icon(
+                        painterResource(id = R.drawable.ic_baseline_help_outline_24),
+                        contentDescription = "Help"
+                    )
+                }
+            }
+        }
+}
+
+
+
+@Composable
+fun Detail(id: Int, viewModel: CostViewModel){
+    val cost by viewModel.findCost(id).collectAsState(Cost(costName = "default", costValue = 1.0))
+    Surface(modifier = Modifier.shadow(4.dp)) {
+        Column {
+            BasicText(stringResource(id = R.string.prodcuct_details))
+            BasicText("Cost: ${cost.costName}")
+            BasicText("Value: ${cost.costValue}")
+            Image(
+                painterResource(id = getRandomImageResource()),
+                contentDescription = cost.costName
+            )
+        }
+    }
+
+//    GlobalScope.launch {
+//        val tmp = viewModel.findCost(id)
+//        withContext(Dispatchers.Main) {
+//            cost = tmp
+//        }
+//    }
+
 }
