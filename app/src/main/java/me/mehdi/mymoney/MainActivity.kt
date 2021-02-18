@@ -41,6 +41,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 //import androidx.compose.ui.platform.setContent
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -253,6 +254,8 @@ fun HomeDrawer(){
 //@Preview
 @Composable
 fun NewItem(navigator: NavController, costViewModel: CostViewModel){
+
+
     var costName by remember { mutableStateOf("") }
     var costValue by remember { mutableStateOf("") }
     val inputModifier = Modifier.padding(8.dp)
@@ -264,6 +267,7 @@ fun NewItem(navigator: NavController, costViewModel: CostViewModel){
         ), modifier = Modifier.align(Alignment.CenterHorizontally))
         TextField(value = costName, onValueChange = { text -> costName = text }, label = { Text(stringResource(id = R.string.cost_name)) }, modifier = inputModifier, keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text))
         TextField(value = costValue, onValueChange = { value -> costValue = value }, label = { Text(stringResource(id = R.string.cost_value)) }, modifier = inputModifier, keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number))
+
 
 
         Button(onClick = {
@@ -322,24 +326,20 @@ fun BottomBar(){
 
 @Composable
 fun Detail(id: Int, viewModel: CostViewModel){
-    val cost by viewModel.findCost(id).collectAsState(Cost(costName = "default", costValue = 1.0))
+    val cost by remember(viewModel, id) {viewModel.findCost(id)}.collectAsState(Cost(costName = "default", costValue = 10.0))
     Surface(modifier = Modifier.shadow(4.dp)) {
-        Column {
-            BasicText(stringResource(id = R.string.prodcuct_details))
-            BasicText("Cost: ${cost.costName}")
-            BasicText("Value: ${cost.costValue}")
+        Column(verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()) {
+            BasicText(stringResource(id = R.string.prodcuct_details), style = MaterialTheme.typography.h3)
             Image(
                 painterResource(id = getRandomImageResource()),
-                contentDescription = cost.costName
+                contentDescription = cost.costName,
+                modifier = Modifier.border(1.dp, Color.Black)
             )
+            BasicText(cost.costName, style = MaterialTheme.typography.subtitle1)
+            BasicText("${cost.costValue}", style = MaterialTheme.typography.subtitle1)
         }
     }
 
-//    GlobalScope.launch {
-//        val tmp = viewModel.findCost(id)
-//        withContext(Dispatchers.Main) {
-//            cost = tmp
-//        }
-//    }
+
 
 }
