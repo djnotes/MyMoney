@@ -25,12 +25,12 @@ import org.intellij.lang.annotations.JdkConstants
 @Composable
 fun EaglePreview(){
             Box(modifier = Modifier
-            .preferredSize(200.dp)
+            .size(200.dp)
             .border(2.dp, Color.Red, CircleShape)
             .border(3.dp, Color.Blue, CircleShape)
             .border(5.dp, Color.Green, CircleShape), contentAlignment = Alignment.Center){
-                Image(painterResource(id = R.drawable.eagle), contentDescription = "Image 1" , modifier = Modifier.preferredSize(100.dp), contentScale = ContentScale.Crop)
-                Image(painterResource(id = R.drawable.eagle), contentDescription = "Eagle", modifier = Modifier.preferredSize(100.dp), contentScale = ContentScale.Crop)
+                Image(painterResource(id = R.drawable.eagle), contentDescription = "Image 1" , modifier = Modifier.size(100.dp), contentScale = ContentScale.Crop)
+                Image(painterResource(id = R.drawable.eagle), contentDescription = "Eagle", modifier = Modifier.size(100.dp), contentScale = ContentScale.Crop)
         }
 }
 

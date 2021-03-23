@@ -108,7 +108,7 @@ fun HomeScreen(navController: NavHostController, costViewModel: CostViewModel?){
                 NewItem(navController, costViewModel)
             }
         }
-        composable("profile/{name}", listOf(navArgument("name"){type = NavType.StringType}))
+        composable("profile")
         {navBackStackEntry ->
             Profile(navBackStackEntry.arguments?.getString("name").toString())
         }
@@ -121,8 +121,34 @@ fun HomeScreen(navController: NavHostController, costViewModel: CostViewModel?){
                 }
             }
         }
+
+        composable("balance"){
+            navBackStackEntry ->
+            navBackStackEntry.arguments?.getInt("id")?.let{
+                BalanceScreen()
+            }
+        }
+
+
+        composable("settings"){
+            SettingsScreen()
+        }
     }
 
+}
+
+@Composable
+fun BalanceScreen() {
+    Box{
+        Text("Balance")
+    }
+}
+
+@Composable
+fun SettingsScreen() {
+    Box{
+        Text("Settings")
+    }
 }
 
 //@Preview
@@ -167,12 +193,14 @@ fun Home(navController: NavHostController, costViewModel: CostViewModel, onItemC
                 drawerGesturesEnabled = true,
                 drawerScrimColor = Color.Green,
                 drawerContent = { HomeDrawer() },
-            bottomBar = { BottomBar() }
+            bottomBar = { MainBottomNavigation(navController) }
         ) {
 
             Column(modifier = Modifier.fillMaxSize()) {
 
-                Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier.padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp)).align(Alignment.CenterHorizontally))
+                Text(stringResource(id = R.string.here_is_your_costs), modifier = Modifier
+                    .padding(PaddingValues(16.dp, 8.dp, 16.dp, 8.dp))
+                    .align(Alignment.CenterHorizontally))
                 val costs = costViewModel.costs.observeAsState()
                 costs.value?.let { items ->
                     Surface(modifier = Modifier.shadow(4.dp)){
@@ -184,11 +212,13 @@ fun Home(navController: NavHostController, costViewModel: CostViewModel, onItemC
                         items(items = items, itemContent = { cost ->
 
                              cost.id?.let{
-                                Row(modifier = Modifier.clickable { onItemClicked(cost.id) }
+                                Row(modifier = Modifier
+                                    .clickable { onItemClicked(cost.id) }
                                     .fillMaxWidth()) {
                                     Text(
                                         "${cost.costName}\t : $${cost.costValue}",
-                                        modifier = Modifier.padding(8.dp)
+                                        modifier = Modifier
+                                            .padding(8.dp)
                                             .width(150.dp)
 
 
@@ -340,6 +370,28 @@ fun Detail(id: Int, viewModel: CostViewModel){
         }
     }
 
+}
 
+@Composable
+fun MainBottomNavigation(navController: NavHostController){
+    val items = listOf(Screen.Home, Screen.Profile, Screen.Balance, Screen.Settings)
+    BottomNavigation(){
+        val currentBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = currentBackStackEntry?.arguments?.getString(KEY_ROUTE)
+        items.forEach{ screen ->
+            BottomNavigationItem(
+                selected =  currentRoute == screen.route,
+                onClick = {
+                    navController.navigate(screen.route){
+                        popUpTo = navController.graph.startDestination
+                        launchSingleTop = true
+                    }
+                },
+                icon = { Icon(screen.icon, contentDescription = stringResource(screen.resourceId)) },
+                label = { Text(stringResource(screen.resourceId)) }
 
+            )
+
+        }
+    }
 }
